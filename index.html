@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAWSAQ Stock Market</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: white;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #4CAF50;
+        }
+        
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+        
+        .btn.sell {
+            background-color: #e74c3c;
+        }
+
+        .btn.sell:hover {
+            background-color: #c0392b;
+        }
+        
+        .container {
+            padding: 20px;
+        }
+
+        .stock {
+            background-color: #333;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+        }
+
+        .stock p {
+            margin: 5px 0;
+        }
+
+        .balance {
+            margin: 20px;
+        }
+        
+        .input-field {
+            padding: 5px;
+            margin: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>BAWSAQ Stock Market</h1>
+
+    <div id="login-screen">
+        <h2>Login to your account</h2>
+        <input type="text" id="username" class="input-field" placeholder="Enter Username">
+        <button class="btn" onclick="login()">Login</button>
+        <p>Don't have an account? <a href="javascript:void(0);" onclick="showSignup()">Sign up here</a></p>
+    </div>
+
+    <div id="signup-screen" class="hidden">
+        <h2>Create an Account</h2>
+        <input type="text" id="signup-username" class="input-field" placeholder="Enter Username">
+        <button class="btn" onclick="createAccount()">Create Account</button>
+        <p>Already have an account? <a href="javascript:void(0);" onclick="showLogin()">Login here</a></p>
+    </div>
+
+    <div id="market-screen" class="hidden">
+        <div id="user-info" class="balance"></div>
+
+        <div id="stocks">
+            <div class="stock">
+                <h3>AmCo</h3>
+                <p id="amco-price">Price: $100</p>
+                <button class="btn" onclick="buyStock('AmCo')">Buy</button>
+            </div>
+
+            <div class="stock">
+                <h3>GlobalTech</h3>
+                <p id="globaltech-price">Price: $200</p>
+                <button class="btn" onclick="buyStock('GlobalTech')">Buy</button>
+            </div>
+
+            <div class="stock">
+                <h3>HyperCorp</h3>
+                <p id="hypercorp-price">Price: $50</p>
+                <button class="btn" onclick="buyStock('HyperCorp')">Buy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        const stockPrices = {
+            "AmCo": 100,
+            "GlobalTech": 200,
+            "HyperCorp": 50
+        };
+        let currentUser = null;
+
+        // Show the login screen
+        function showLogin() {
+            document.getElementById('signup-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+        }
+
+        // Show the signup screen
+        function showSignup() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('signup-screen').classList.remove('hidden');
+        }
+
+        // Login function
+        function login() {
+            const username = document.getElementById('username').value;
+            if (username && localStorage.getItem(username)) {
+                currentUser = JSON.parse(localStorage.getItem(username));
+                loadMarket();
+                showMarketScreen();
+            } else {
+                alert('No account found with that username.');
+            }
+        }
+
+        // Create account function
+        function createAccount() {
+            const username = document.getElementById('signup-username').value;
+            if (username && !localStorage.getItem(username)) {
+                currentUser = {
+                    username: username,
+                    balance: 1000,  // Starting balance
+                    stocks: {}      // No stocks initially
+                };
+                localStorage.setItem(username, JSON.stringify(currentUser));
+                loadMarket();
+                showMarketScreen();
+            } else {
+                alert('Username already exists or invalid.');
+            }
+        }
+
+        // Show the market screen after login/signup
+        function showMarketScreen() {
+            document.getElementById('signup-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('market-screen').classList.remove('hidden');
+            updateUserInfo();
+        }
+
+        // Update user information (balance and owned stocks)
+        function updateUserInfo() {
+            const userInfo = document.getElementById('user-info');
+            userInfo.innerHTML = `Welcome, ${currentUser.username}<br>Balance: $${currentUser.balance}<br>Owned Stocks: ${JSON.stringify(currentUser.stocks)}`;
+        }
+
+        // Buy stock function
+        function buyStock(stockName) {
+            const stockPrice = stockPrices[stockName];
+            if (currentUser.balance >= stockPrice) {
+                currentUser.balance -= stockPrice;
+
+                // Add stock to user's portfolio
+                if (!currentUser.stocks[stockName]) {
+                    currentUser.stocks[stockName] = 0;
+                }
+                currentUser.stocks[stockName] += 1;
+
+                localStorage.setItem(currentUser.username, JSON.stringify(currentUser));
+                updateUserInfo();
+                alert(`You bought 1 share of ${stockName} for $${stockPrice}.`);
+            } else {
+                alert('Insufficient funds to buy stock.');
+            }
+        }
+
+        // Load market data (e.g., randomize stock prices)
+        function loadMarket() {
+            for (let stock in stockPrices) {
+                const priceElement = document.getElementById(stock.toLowerCase() + '-price');
+                stockPrices[stock] = Math.round((Math.random() * 100) + stockPrices[stock] * 0.9);
+                priceElement.textContent = `Price: $${stockPrices[stock]}`;
+            }
+        }
+
+    </script>
+
+</body>
+</html>
